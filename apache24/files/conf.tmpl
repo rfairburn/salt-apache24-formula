@@ -1,0 +1,17 @@
+{%- macro render(config) %}
+  {%- for config_item in config %}
+    {%- set config_name = config_item.keys()[0] %}
+    {%- set config_value = config_item.values()[0] %}
+    {%- if config_value is string or config_value is number %}
+{{ config_name }} {{ config_value }}
+    {%- elif config_value is mapping %}
+
+# Begin {{ config_name }}
+{{ '<{0} {1}>'.format(config_name, config_value['name']) -}}
+    {{ render(config_value['config'])|indent }}
+{{ '</{0}>'.format(config_name) }}
+# End {{ config_name }}{{ '\n' }}
+    {%- endif %}
+  {%- endfor %}
+{%- endmacro %}
+{{ render(config) }}

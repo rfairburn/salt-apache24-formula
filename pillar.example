@@ -1,0 +1,136 @@
+apache24:
+  lookup:
+    vhosts_dir: /etc/httpd/vhosts.d
+  mod_ssl: True
+  sysconfig:
+    lang: C
+    options: '-D production'
+  config:
+    - ServerRoot: /etc/httpd
+    - Listen: 80
+    - Include: conf.modules.d/*.conf
+    - User: apache
+    - Group: apache
+    - ServerAdmin: root@localhost
+    - Directory:
+        name: /
+        config:
+          - AllowOverride: none
+          - Require: all denied
+    - DocumentRoot: /var/www/html
+    - Directory:
+        name: /var/www
+        config:
+          - AllowOverride: none
+          - Require: all granted
+    - Directory:
+        name: /var/www/html
+        config:
+          - Options: Indexes FollowSymLinks
+          - AllowOverride: None
+          - Require: all granted
+    - IfModule:
+        name: dir_module
+        config:
+          - DirectoryIndex: index.html
+    - Files:
+        name: .ht*
+        config:
+          - Require: all denied
+    - ErrorLog: logs/error_log
+    - LogLevel: warn
+    - IfModule:
+        name: log_config_module
+        config:
+          - LogFormat: '"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined'
+          - LogFormat: '"%h %l %u %t \"%r\" %>s %b" common'
+          - IfModule:
+              name: logio_module
+              config:
+                - LogFormat: '"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O" combinedio'
+          - CustomLog: '"logs/access_log" combined'
+    - IfModule:
+        name: alias_module
+        config:
+          - ScriptAlias: '/cgi-bin/ "/var/www/cgi-bin/"'
+    - Directory:
+        name: /var/www/cgi-bin
+        config:
+          - AllowOverride: None
+          - Options: None
+          - Require: all granted
+    - IfModule:
+        name: mime_module
+        config:
+          - TypesConfig: /etc/mime.types
+          - AddType: application/x-compress .Z
+          - AddType: application/x-gzip .gz .tgz
+          - AddType: text/html .shtml
+          - AddOutputFilter: INCLUDES .shtml
+    - AddDefaultCharset: UTF-8
+    - IfModule:
+        name: mime_magic_module
+        config:
+          - MIMEMagicFile: conf/magic
+    - EnableSendfile: 'on'
+    - IncludeOptional: conf.d/*.conf
+    - IncludeOptional: vhosts.d/*.conf
+  conf_d:
+    ssl:
+      config:
+        - Listen: 443 https
+        - SSLPassPhraseDialog: 'exec:/usr/libexec/httpd-ssl-pass-dialog'
+        - SSLSessionCache: 'shmcb:/run/httpd/sslcache(512000)'
+        - SSLSessionCacheTimeout: 300
+        - SSLRandomSeed: 'startup file:/dev/urandom  256'
+        - SSLRandomSeed: connect builtin
+        - SSLCryptoDevice: builtin
+        # Default SSL virtual host (disabled)
+        {#
+        - VirtualHost:
+            name: '_default_:443'
+            config:
+              - ErrorLog: logs/ssl_error_log
+              - TransferLog: logs/ssl_access_log
+              - LogLevel: warn
+              - SSLEngine: on
+              - SSLProtocol: all -SSLv2
+              - SSLCertificateFile: /etc/pki/tls/certs/localhost.crt
+              - SSLCertificateKeyFile: /etc/pki/tls/private/localhost.key
+              - Files:
+                  name: '~ "\.(cgi|shtml|phtml|php3?)$"'
+                  config:
+                    - SSLOptions: +StdEnvVars
+              - Directory:
+                  name: /var/www/cgi-bin
+                  config:
+                    - SSLOptions: +StdEnvVars
+              - BrowserMatch: '"MSIE [2-5]" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0'
+              - CustomLog: 'logs/ssl_request_log "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"'
+        #}
+    worker:
+      config:
+        - IfModule:
+            name: worker.c
+            config:
+              - ServerLimit: 4
+              - StartServers: 4
+              - MaxRequestWorkers: 256
+              - MinSpareThreads: 25
+              - MaxSpareThreads: 256
+              - ThreadsPerChild: 64
+  modules:
+    ssl:
+      priority: '00'
+      config:
+        - LoadModule: 'ssl_module modules/mod_ssl.so'
+    mpm:
+      priority: '00'
+      config:
+        - LoadModule: 'mpm_worker_module modules/mod_mpm_worker.so'
+  vhosts:
+    test:
+      priority: '00'
+      config:
+        - NameVirtualHost: '*:80'
+

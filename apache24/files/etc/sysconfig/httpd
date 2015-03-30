@@ -1,0 +1,2 @@
+OPTIONS="{{ config.get('options', '') }}"
+LANG={{ config.get('lang', 'C') }}

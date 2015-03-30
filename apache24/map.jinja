@@ -1,0 +1,16 @@
+{% set apache24 = salt['grains.filter_by']({
+    'Amazon': {
+        'package': 'httpd24',
+        'user': 'apache',
+        'group': 'apache',
+        'conf': '/etc/httpd/conf/httpd.conf',
+        'conf_dir': '/etc/httpd/conf.d',
+        'modules_dir': '/etc/httpd/conf.modules.d',
+        'www_dir': '/var/www/html',
+        'vhosts_dir': '/etc/httpd/conf.d',
+        'log_dir': '/var/log/httpd',
+        'ssl_package': 'mod24_ssl',
+        'service': 'httpd',
+        'sysconfig': '/etc/sysconfig/httpd'
+    },
+}, merge=salt['pillar.get']('apache24:lookup'), default='Amazon', grain='os') %}
