@@ -11,6 +11,9 @@ include:
 {% if salt['pillar.get']('apache24:mod_ssl', False) %}
   - apache24.ssl
 {% endif %}
+{% if salt['pillar.get']('apache24:mod_ldap', False) %}
+  - apache24.ldap
+{% endif %}
 {% for include in includes %}
   {% if include in salt['pillar.get']('apache24', {}) %}
   - apache24.{{ include }}

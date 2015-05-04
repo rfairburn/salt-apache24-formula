@@ -2,6 +2,7 @@ apache24:
   lookup:
     vhosts_dir: /etc/httpd/vhosts.d
   mod_ssl: True
+  mod_ldap: True
   sysconfig:
     lang: C
     options: '-D production'
@@ -119,6 +120,7 @@ apache24:
               - MinSpareThreads: 25
               - MaxSpareThreads: 256
               - ThreadsPerChild: 64
+              - ThreadLimit: 64
   modules:
     ssl:
       priority: '00'

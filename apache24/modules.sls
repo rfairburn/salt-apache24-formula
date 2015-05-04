@@ -1,10 +1,14 @@
 {% from "apache24/map.jinja" import apache24 with context %}
 
 {% set mod_ssl = salt['pillar.get']('apache24:mod_ssl', False) %}
+{% set mod_ldap = salt['pillar.get']('apache24:mod_ldap', False) %}
 include:
   - apache24.package
 {% if mod_ssl %}
   - apache24.ssl
+{% endif %}
+{% if mod_ldap %}
+  - apache24.ldap
 {% endif %}
 
 {% for module_file, settings in salt['pillar.get']('apache24:modules', {}).items() %}
